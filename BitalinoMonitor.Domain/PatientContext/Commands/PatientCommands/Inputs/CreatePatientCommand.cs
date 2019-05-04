@@ -7,6 +7,7 @@ namespace BitalinoMonitor.Domain.PatientContext.Commands.PatientCommands.Inputs
 {
     public class CreatePatientCommand : Notifiable, ICommand
     {
+        public Guid? Id { get; set; }
         public string Name { get; set; }
         public string Phone { get; set; }
         public string PhotoPath { get; set; }

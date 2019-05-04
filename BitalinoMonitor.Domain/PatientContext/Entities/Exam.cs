@@ -1,5 +1,4 @@
-﻿using BitalinoMonitor.Domain.PatientContext.Enums;
-using BitalinoMonitor.Shared.Entities;
+﻿using BitalinoMonitor.Shared.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +9,18 @@ namespace BitalinoMonitor.Domain.PatientContext.Entities
     {
         readonly IEnumerable<BitalinoFrame> _frames;
 
-        public EExamType Type { get; private set; }
         public DateTime Date { get; private set; }
         public int Channel { get; private set; }
+        public TimeSpan Duration { get; private set; }
+        public int Frequency { get; private set; }
         public IReadOnlyCollection<BitalinoFrame> Frames => _frames.ToArray();
 
-        public Exam(int channel, DateTime date, EExamType type, IEnumerable<BitalinoFrame> frames)
+        public Exam(int channel, int frequency, TimeSpan duration, DateTime date, IEnumerable<BitalinoFrame> frames)
         {
             Channel = channel;
+            Frequency = frequency;
+            Duration = duration;
             Date = date;
-            Type = type;
             _frames = frames;
         }
     }

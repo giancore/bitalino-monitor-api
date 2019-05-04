@@ -13,6 +13,8 @@ namespace BitalinoMonitor.Domain.PatientContext.Repositories
         IEnumerable<ListPatientExamsQueryResult> ListExams(Guid idPatient);
         IEnumerable<ListPatientExamsBitalinoFrameQueryResult> ListFrames(Guid idExam);
         void Save(Patient patient);
-        void SaveExam(Exam exam, Guid idPatient);
+        void Update(Patient patient, Guid idPatient);
+        void Save(Exam exam, Guid idPatient);
+        void Delete(Guid idPatient);
     }
 }

@@ -9,6 +9,13 @@ namespace BitalinoMonitor.Domain.PatientContext.Queries
         public DateTime Date { get; set; }
         public int Type { get; set; }
         public int Channel { get; set; }
-        public List<ListPatientExamsBitalinoFrameQueryResult> Frames { get; set; }
+        public int Frequency { get; set; }
+        public long Duration { get; set; }
+        public List<GetPatientExamFramesQueryResult> Frames { get; set; }
+
+        public GetPatientExamQueryResult()
+        {
+            Frames = new List<GetPatientExamFramesQueryResult>();
+        }
     }
 }

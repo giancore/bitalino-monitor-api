@@ -6,6 +6,6 @@ namespace BitalinoMonitor.Domain.PatientContext.Queries
     {
         public Guid Id { get; set; }
         public DateTime Date { get; set; }
-        public int Type { get; set; }
+        public int Channel { get; set; }
     }
 }

@@ -27,12 +27,27 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
         public GetPatientExamQueryResult GetExam(Guid idExam)
         {
             var exam = _context.Connection
-                .Query<GetPatientExamQueryResult>("SELECT [Id], [Date], [Type], [Channel] FROM [Exam] WHERE [IdPatient] = @idExam", new { idExam }).FirstOrDefault();
+                .Query<GetPatientExamQueryResult, TimeSpan, GetPatientExamQueryResult>(
+                    sql: "SELECT [Id], [Date], [Channel], [Frequency], [Duration] FROM [Exam] WHERE [Id] = @idExam",
+                    param: new { idExam },
+                    map: (patient, duration) =>
+                    {
+                        patient.Duration = duration.Milliseconds;
+                        return patient;
+                    },
+                    splitOn: "Duration").FirstOrDefault();
 
-            if(exam != null)
+            if (exam != null)
             {
                 var frames = ListFrames(exam.Id);
-                exam.Frames.AddRange(frames);
+                exam.Frames.AddRange(frames.Select(f => new GetPatientExamFramesQueryResult
+                {
+                    Id = f.Id,
+                    Identifier = f.Identifier,
+                    Seq = f.Seq,
+                    Analog = new int[] { f.A0, f.A1, f.A2, f.A3, f.A4, f.A5 },
+                    Digital = new int[] { f.D0, f.D1, f.D2, f.D3 }
+                }));
             }
 
             return exam;
@@ -47,7 +62,7 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
         public IEnumerable<ListPatientExamsQueryResult> ListExams(Guid idPatient)
         {
             return _context.Connection
-                .Query<ListPatientExamsQueryResult>("SELECT [Id], [Date], [Type] FROM [Exam] WHERE [IdPatient] = @idPatient", new { idPatient });
+                .Query<ListPatientExamsQueryResult>("SELECT [Id], [Date], [Channel] FROM [Exam] WHERE [IdPatient] = @idPatient", new { idPatient });
         }
 
         public IEnumerable<ListPatientExamsBitalinoFrameQueryResult> ListFrames(Guid idExam)
@@ -70,17 +85,36 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
                 });
         }
 
-        public void SaveExam(Exam exam, Guid idPatient)
+        public void Update(Patient patient, Guid idPatient)
         {
-            _context.Connection.Execute(@"INSERT INTO [Exam] ([Id], [IdPatient], [Type], [Date], [Channel])
-                                            VALUES (@Id, @IdPatient, @Type, @Date, @Channel)",
+            _context.Connection.Execute(@"UPDATE [Patient] 
+                                             SET [Name] = @Name,
+                                                 [Phone] = @Phone,
+                                                 [PhotoPath] = @PhotoPath,
+                                                 [DateOfBirth] = @DateOfBirth
+                                           WHERE [Id] = @Id",
+                new
+                {
+                    id = idPatient,
+                    patient.Name,
+                    patient.Phone,
+                    patient.PhotoPath,
+                    patient.DateOfBirth
+                });
+        }
+
+        public void Save(Exam exam, Guid idPatient)
+        {
+            _context.Connection.Execute(@"INSERT INTO [Exam] ([Id], [IdPatient], [Date], [Channel], [Frequency], [Duration])
+                                            VALUES (@Id, @IdPatient, @Date, @Channel, @Frequency, @Duration)",
                 new
                 {
                     exam.Id,
                     IdPatient = idPatient,
-                    exam.Type,
                     exam.Date,
-                    exam.Channel
+                    exam.Channel,
+                    exam.Frequency,
+                    exam.Duration
                 });
 
             foreach (var frame in exam.Frames)
@@ -105,6 +139,15 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
                         D3 = frame.GetDigital(3)
                     });
             }
+        }
+
+        public void Delete(Guid idPatient)
+        {
+            _context.Connection.Execute("DELETE [BitalinoFrame] WHERE [IdExam] IN (SELECT [IdExam] FROM [Exam] WHERE [IdPatient] = @IdPatient)", new { IdPatient = idPatient });
+
+            _context.Connection.Execute("DELETE [Exam] WHERE [IdPatient] = @IdPatient", new { IdPatient = idPatient });
+
+            _context.Connection.Execute("DELETE [Patient] WHERE [Id] = @IdPatient", new { IdPatient = idPatient });
         }
     }
 }

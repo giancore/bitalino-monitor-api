@@ -10,6 +10,8 @@ namespace BitalinoMonitor.Domain.PatientContext.Commands.PatientCommands.Inputs
         public Guid IdPatient { get; set; }
         public DateTime Date { get; set; }
         public int Channel { get; set; }
+        public long Duration { get; set; }
+        public int Frequency { get; set; }
         public List<BitalinoFramesCommand> Frames { get; set; }
 
         public AddExamCommand()

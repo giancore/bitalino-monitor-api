@@ -8,7 +8,12 @@ namespace BitalinoMonitor.Tests
 {
     public class FakePatientRepository : IPatientRepository
     {
-       public IEnumerable<ListPatientQueryResult> Get()
+        public void Delete(Guid idPatient)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<ListPatientQueryResult> Get()
         {
             throw new NotImplementedException();
         }
@@ -43,7 +48,12 @@ namespace BitalinoMonitor.Tests
             
         }
 
-        public void SaveExam(Exam exam, Guid idPatient)
+        public void Save(Exam exam, Guid idPatient)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Update(Patient patient, Guid idPatient)
         {
             throw new NotImplementedException();
         }

@@ -1,5 +1,4 @@
 using System;
-using BitalinoMonitor.Domain.PatientContext.CustomerCommands.Inputs;
 using BitalinoMonitor.Domain.PatientContext.Entities;
 using BitalinoMonitor.Domain.PatientContext.Repositories;
 using BitalinoMonitor.Domain.PatientContext.Services;

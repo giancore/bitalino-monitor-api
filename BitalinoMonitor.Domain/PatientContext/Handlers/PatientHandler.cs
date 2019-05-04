@@ -1,10 +1,10 @@
 ﻿using BitalinoMonitor.Domain.PatientContext.Commands.PatientCommands.Inputs;
 using BitalinoMonitor.Domain.PatientContext.CustomerCommands.Outputs;
 using BitalinoMonitor.Domain.PatientContext.Entities;
-using BitalinoMonitor.Domain.PatientContext.Enums;
 using BitalinoMonitor.Domain.PatientContext.Repositories;
 using BitalinoMonitor.Shared.Commands;
 using FluentValidator;
+using System;
 using System.Linq;
 
 namespace BitalinoMonitor.Domain.PatientContext.Handlers
@@ -27,7 +27,14 @@ namespace BitalinoMonitor.Domain.PatientContext.Handlers
                 patient.AddPhoto(command.PhotoPath);
             }
 
-            _repository.Save(patient);
+            if (command.Id.HasValue)
+            {
+                _repository.Update(patient, command.Id.Value);
+            }
+            else
+            {
+                _repository.Save(patient);
+            }
 
             return new CommandResult(true, "Paciente inserido com sucesso!", new
             {
@@ -46,14 +53,29 @@ namespace BitalinoMonitor.Domain.PatientContext.Handlers
 
             var frames = command.Frames.Select(f => new BitalinoFrame(f.Identifier, f.Seq, f.Analog, f.Digital));
 
-            var exam = new Exam(command.Channel, command.Date, (EExamType)command.Channel, frames);
+            var duration = TimeSpan.FromMilliseconds(command.Duration);
+            var exam = new Exam(command.Channel, command.Frequency, duration, command.Date, frames);
 
-            _repository.SaveExam(exam, patient.Id);
+            _repository.Save(exam, patient.Id);
 
             return new CommandResult(true, "Exame inserido com sucesso!", new
             {
                 exam.Id,
             });
+        }
+
+        public ICommandResult Handle(DeletePatientCommand command)
+        {
+            var patient = _repository.Get(command.IdPatient);
+
+            if (patient == null)
+            {
+                return new CommandResult(false, "Paciente não encontrado", Notifications);
+            }
+
+            _repository.Delete(patient.Id);
+
+            return new CommandResult(true, "Paciente excluído com sucesso!", true);
         }
     }
 }
