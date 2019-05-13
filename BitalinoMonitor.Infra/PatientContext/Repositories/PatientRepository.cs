@@ -32,7 +32,7 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
                     param: new { idExam },
                     map: (patient, duration) =>
                     {
-                        patient.Duration = duration.Milliseconds;
+                        patient.Duration = (long)duration.TotalMilliseconds;
                         return patient;
                     },
                     splitOn: "Duration").FirstOrDefault();
@@ -56,19 +56,19 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
         public IEnumerable<ListPatientQueryResult> Get()
         {
             return _context.Connection
-                .Query<ListPatientQueryResult>("SELECT [Id], [Name], [PhotoPath], [Phone] FROM [Patient]");
+                .Query<ListPatientQueryResult>("SELECT [Id], [Name], [PhotoPath], [Phone] FROM [Patient] ORDER BY [Name]");
         }
 
         public IEnumerable<ListPatientExamsQueryResult> ListExams(Guid idPatient)
         {
             return _context.Connection
-                .Query<ListPatientExamsQueryResult>("SELECT [Id], [Date], [Channel] FROM [Exam] WHERE [IdPatient] = @idPatient", new { idPatient });
+                .Query<ListPatientExamsQueryResult>("SELECT [Id], [Date], [Channel] FROM [Exam] WHERE [IdPatient] = @idPatient ORDER BY [Date] DESC", new { idPatient });
         }
 
         public IEnumerable<ListPatientExamsBitalinoFrameQueryResult> ListFrames(Guid idExam)
         {
             return _context.Connection
-               .Query<ListPatientExamsBitalinoFrameQueryResult>("SELECT [Id], [Identifier], [Seq], [A0], [A1], [A2], [A3], [A4], [A5], [D0], [D1], [D2], [D3] FROM [BitalinoFrame] WHERE [IdExam] = @idExam", new { idExam });
+               .Query<ListPatientExamsBitalinoFrameQueryResult>("SELECT [Id], [Identifier], [Seq], [A0], [A1], [A2], [A3], [A4], [A5], [D0], [D1], [D2], [D3] FROM [BitalinoFrame] WHERE [IdExam] = @idExam ORDER BY [Id]", new { idExam });
         }
 
         public void Save(Patient patient)

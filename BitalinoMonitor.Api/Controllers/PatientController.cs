@@ -73,5 +73,13 @@ namespace BitalinoMonitor.Api.Controllers
             var result = (CommandResult)_handler.Handle(command);
             return result;
         }
+
+        [HttpGet]
+        [Route("v1/Patients/Exam/Archetype")]
+        public ICommandResult GetArchetype(CreateEhrCommand command)
+        {
+            var result = (CommandResult)_handler.Handle(command);
+            return result;
+        }
     }
 }
