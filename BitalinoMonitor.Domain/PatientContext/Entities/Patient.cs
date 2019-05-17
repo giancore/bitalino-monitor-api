@@ -20,6 +20,17 @@ namespace BitalinoMonitor.Domain.PatientContext.Entities
             Name = name;
             Phone = phone;
             DateOfBirth = birthdayDate;
+            _exams = new List<Exam>();
+        }
+
+        public Patient(Guid id, string name, string phone, string photoPath, DateTime birthdayDate)
+        {
+            SetId(id);
+            Name = name;
+            Phone = phone;
+            PhotoPath = photoPath;
+            DateOfBirth = birthdayDate;
+            _exams = new List<Exam>();
         }
 
         public void AddPhoto(string photoPath)

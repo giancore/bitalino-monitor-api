@@ -18,22 +18,51 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
             _context = context;
         }
 
-        public GetPatientQueryResult Get(Guid id)
+        public Patient GetPatient(Guid idPatient)
         {
-            return _context.Connection
-                .Query<GetPatientQueryResult>("SELECT [Id], [Name], [PhotoPath], [Phone], [DateOfBirth], [CreateDate] FROM [Patient] WHERE [Id] = @id", new { id }).FirstOrDefault();
+            string query = "SELECT [Id], [Name], [Phone], [PhotoPath], [DateOfBirth] FROM [Patient] WHERE [Id] = @idPatient";
+
+            return _context.Connection.Query(query, new { idPatient })
+                       .Select(row => new Patient(row.Id, row.Name, row.Phone, row.PhotoPath, row.DateOfBirth)).FirstOrDefault();
         }
 
-        public GetPatientExamQueryResult GetExam(Guid idExam)
+        public Exam GetExam(Guid idExam)
+        {
+            string query = "SELECT [Id], [Channel], [Frequency], [Duration], [Date] FROM [Exam] WHERE [Id] = @idExam";
+
+            var frames = GetFrames(idExam);
+
+            return _context.Connection.Query(query, new { idExam })
+                       .Select(row => new Exam(row.Id, row.Channel, row.Frequency, row.Duration, row.Date, frames)).FirstOrDefault();
+        }
+
+        public IEnumerable<BitalinoFrame> GetFrames(Guid idExam)
+        {
+            string query = "SELECT [Id], [Identifier], [Seq], [A0], [A1], [A2], [A3], [A4], [A5], [D0], [D1], [D2], [D3] FROM [BitalinoFrame] WHERE [IdExam] = @idExam ORDER BY [Id]";
+
+            return _context.Connection.Query(query, new { idExam })
+                       .Select(row => new BitalinoFrame(row.Id, row.Identifier, row.Seq, row.A0, row.A1, row.A2, row.A3, row.A4, row.A5, row.D0, row.D1, row.D2, row.D3));
+        }
+
+        public Patient GetPatientByIdExam(Guid idExam)
+        {
+            string query = @"SELECT [Id], [Name], [PhotoPath], [Phone], [DateOfBirth], [CreateDate] 
+                                    FROM [Patient] WHERE [Id] = (SELECT [IdPatient] FROM [Exam] WHERE [Id] = @idExam)";
+
+            return _context.Connection.Query(query, new { idExam })
+                        .Select(row => new Patient(row.Id, row.Name, row.Phone, row.PhotoPath, row.DateOfBirth)).FirstOrDefault();
+        }
+
+        public GetPatientExamQueryResult GetExamAsQueryResult(Guid idExam)
         {
             var exam = _context.Connection
                 .Query<GetPatientExamQueryResult, TimeSpan, GetPatientExamQueryResult>(
                     sql: "SELECT [Id], [Date], [Channel], [Frequency], [Duration] FROM [Exam] WHERE [Id] = @idExam",
                     param: new { idExam },
-                    map: (patient, duration) =>
+                    map: (examMap, duration) =>
                     {
-                        patient.Duration = (long)duration.TotalMilliseconds;
-                        return patient;
+                        examMap.Duration = (long)duration.TotalMilliseconds;
+                        return examMap;
                     },
                     splitOn: "Duration").FirstOrDefault();
 
@@ -53,7 +82,7 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
             return exam;
         }
 
-        public IEnumerable<ListPatientQueryResult> Get()
+        public IEnumerable<ListPatientQueryResult> GetPatients()
         {
             return _context.Connection
                 .Query<ListPatientQueryResult>("SELECT [Id], [Name], [PhotoPath], [Phone] FROM [Patient] ORDER BY [Name]");

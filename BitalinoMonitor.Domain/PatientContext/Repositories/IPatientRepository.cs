@@ -7,9 +7,12 @@ namespace BitalinoMonitor.Domain.PatientContext.Repositories
 {
     public interface IPatientRepository
     {
-        GetPatientQueryResult Get(Guid id);
-        GetPatientExamQueryResult GetExam(Guid idExam);
-        IEnumerable<ListPatientQueryResult> Get();
+        Patient GetPatient(Guid id);
+        Patient GetPatientByIdExam(Guid idExam);
+        Exam GetExam(Guid idExam);
+
+        GetPatientExamQueryResult GetExamAsQueryResult(Guid idExam);
+        IEnumerable<ListPatientQueryResult> GetPatients();
         IEnumerable<ListPatientExamsQueryResult> ListExams(Guid idPatient);
         IEnumerable<ListPatientExamsBitalinoFrameQueryResult> ListFrames(Guid idExam);
         void Save(Patient patient);

@@ -16,10 +16,4 @@
     <Folder Include="PatientContext\Archetypes\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="OpenEHR">
-      <HintPath>..\..\..\..\Users\Gian Mella\Downloads\OpenEHR-master\src\OpenEhr\bin\OpenEHR.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>

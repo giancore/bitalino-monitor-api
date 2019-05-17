@@ -7,6 +7,13 @@
 
   <ItemGroup>
     <PackageReference Include="dapper" Version="1.60.6" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="OpenEHR">
+      <HintPath>..\Library\OpenEHR.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <PropertyGroup>

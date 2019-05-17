@@ -37,6 +37,7 @@ namespace BitalinoMonitor.Api
             services.AddScoped<BitalinoMonitorDataContext, BitalinoMonitorDataContext>();
             services.AddTransient<IPatientRepository, PatientRepository>();
             services.AddTransient<IEmailService, EmailService>();
+            services.AddTransient<IOpenEHRService, OpenEHRService>();
             services.AddTransient<PatientHandler, PatientHandler>();
 
             services.AddSwaggerGen(x =>

@@ -1,5 +1,3 @@
-using BitalinoMonitor.Domain.PatientContext.Entities;
-
 namespace BitalinoMonitor.Domain.PatientContext.Services
 {
     public interface IEmailService

@@ -17,4 +17,8 @@
     <ProjectReference Include="..\BitalinoMonitor.Infra\BitalinoMonitor.Infra.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Fakes\" />
+  </ItemGroup>
+
 </Project>

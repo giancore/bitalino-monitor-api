@@ -1,6 +1,6 @@
 using BitalinoMonitor.Domain.PatientContext.Commands.PatientCommands.Inputs;
-using BitalinoMonitor.Domain.PatientContext.Commands.PatientCommands.Outputs;
 using BitalinoMonitor.Domain.PatientContext.CustomerCommands.Outputs;
+using BitalinoMonitor.Domain.PatientContext.Entities;
 using BitalinoMonitor.Domain.PatientContext.Handlers;
 using BitalinoMonitor.Domain.PatientContext.Queries;
 using BitalinoMonitor.Domain.PatientContext.Repositories;
@@ -27,14 +27,14 @@ namespace BitalinoMonitor.Api.Controllers
         [ResponseCache(Duration = 15)]
         public IEnumerable<ListPatientQueryResult> Get()
         {
-            return _repository.Get();
+            return _repository.GetPatients();
         }
 
         [HttpGet]
         [Route("v1/Patients/{id}")]
-        public GetPatientQueryResult GetById(Guid id)
+        public Patient GetById(Guid id)
         {
-            return _repository.Get(id);
+            return _repository.GetPatient(id);
         }
 
         [HttpGet]
@@ -48,7 +48,7 @@ namespace BitalinoMonitor.Api.Controllers
         [Route("v1/Patients/Exam/{idExam}")]
         public GetPatientExamQueryResult GetExam(Guid idExam)
         {
-            return _repository.GetExam(idExam);
+            return _repository.GetExamAsQueryResult(idExam);
         }
 
         [HttpGet]
@@ -75,9 +75,14 @@ namespace BitalinoMonitor.Api.Controllers
         }
 
         [HttpGet]
-        [Route("v1/Patients/Exam/Archetype")]
-        public ICommandResult GetArchetype(CreateEhrCommand command)
+        [Route("v1/Patients/Exam/{idExam}/Composition")]
+        public ICommandResult GetArchetype(Guid idExam)
         {
+            var command = new CreateEhrCompositionCommand
+            {
+                IdExam = idExam
+            };
+
             var result = (CommandResult)_handler.Handle(command);
             return result;
         }
