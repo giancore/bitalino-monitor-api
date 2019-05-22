@@ -135,7 +135,7 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
         public void Save(Exam exam, Guid idPatient)
         {
             _context.Connection.Execute(@"INSERT INTO [Exam] ([Id], [IdPatient], [Date], [Channel], [Frequency], [Duration])
-                                            VALUES (@Id, @IdPatient, @Date, @Channel, @Frequency, @Duration)",
+                                            VALUES (@Id, @IdPatient, @Date, @Channel, @Frequency, @DurationAsTimeSpan)",
                 new
                 {
                     exam.Id,
@@ -143,7 +143,7 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
                     exam.Date,
                     exam.Channel,
                     exam.Frequency,
-                    exam.Duration
+                    exam.DurationAsTimeSpan
                 });
 
             foreach (var frame in exam.Frames)

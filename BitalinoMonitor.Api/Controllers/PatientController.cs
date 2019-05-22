@@ -37,6 +37,19 @@ namespace BitalinoMonitor.Api.Controllers
             return _repository.GetPatient(id);
         }
 
+        [HttpDelete]
+        [Route("v1/Patients/{id}")]
+        public CommandResult DeleteById(Guid id)
+        {
+            var command = new DeletePatientCommand
+            {
+                IdPatient = id
+            };
+
+            var result = (CommandResult)_handler.Handle(command);
+            return result;
+        }
+
         [HttpGet]
         [Route("v1/Patients/{idPatient}/Exams")]
         public IEnumerable<ListPatientExamsQueryResult> GetExams(Guid idPatient)
@@ -46,9 +59,16 @@ namespace BitalinoMonitor.Api.Controllers
 
         [HttpGet]
         [Route("v1/Patients/Exam/{idExam}")]
-        public GetPatientExamQueryResult GetExam(Guid idExam)
+        public CommandResult GetExam(Guid idExam)
         {
-            return _repository.GetExamAsQueryResult(idExam);
+            //return _repository.GetExamAsQueryResult(idExam);
+            var command = new GetExamCommand
+            {
+                IdExam = idExam
+            };
+
+            var result = (CommandResult)_handler.Handle(command);
+            return result;
         }
 
         [HttpGet]
@@ -75,10 +95,36 @@ namespace BitalinoMonitor.Api.Controllers
         }
 
         [HttpGet]
-        [Route("v1/Patients/Exam/{idExam}/Composition")]
-        public ICommandResult GetArchetype(Guid idExam)
+        [Route("v1/Patients/Exam/{idExam}/Create-Medical-Records")]
+        public ICommandResult GetMedicalRecords(Guid idExam)
         {
-            var command = new CreateEhrCompositionCommand
+            var command = new CreateMedicalRecordsXMLCommand
+            {
+                IdExam = idExam
+            };
+
+            var result = (CommandResult)_handler.Handle(command);
+            return result;
+        }
+
+        [HttpGet]
+        [Route("v1/Patients/Exam/{idExam}/Transform-Medical-Records")]
+        public ICommandResult TransformMedicalRecordsToHTML(Guid idExam)
+        {
+            var command = new TransformMedicalRecordsToHTMLCommand
+            {
+                IdExam = idExam
+            };
+
+            var result = (CommandResult)_handler.Handle(command);
+            return result;
+        }
+
+        [HttpGet]
+        [Route("v1/Patients/Exam/{idExam}/Filter")]
+        public ICommandResult GetFilterExamResult(Guid idExam)
+        {
+            var command = new FilterExamResultCommand
             {
                 IdExam = idExam
             };

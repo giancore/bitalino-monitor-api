@@ -4,7 +4,7 @@ using System;
 
 namespace BitalinoMonitor.Domain.PatientContext.Commands.PatientCommands.Inputs
 {
-    public class CreateEhrCompositionCommand : Notifiable, ICommand
+    public class FilterExamResultCommand : Notifiable, ICommand
     {
         public Guid IdExam { get; set; }
 

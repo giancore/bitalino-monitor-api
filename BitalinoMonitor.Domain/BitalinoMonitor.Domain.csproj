@@ -14,6 +14,13 @@
 
   <ItemGroup>
     <Folder Include="PatientContext\Archetypes\" />
+    <Folder Include="PatientContext\XSLTransform\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="PatientContext\XSLTransform\openEHR_RMtoHTML.xsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
