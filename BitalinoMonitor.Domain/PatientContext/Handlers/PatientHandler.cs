@@ -185,7 +185,7 @@ namespace BitalinoMonitor.Domain.PatientContext.Handlers
             var frames = exam.Frames.Select(f => f.Analog[exam.Channel]);
             var filteredFrames = new List<double>();
 
-            var butterworthFilter = new ButterworthFilterService(exam.Frequency);
+            var butterworthFilter = new ButterworthFilterService(exam.Frequency, exam.Type);
 
             foreach (var frame in frames)
             {

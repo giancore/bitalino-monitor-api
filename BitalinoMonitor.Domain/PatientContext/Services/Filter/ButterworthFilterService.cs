@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BitalinoMonitor.Domain.PatientContext.Enums;
+using System;
 
 namespace BitalinoMonitor.Domain.PatientContext.Services.Filter
 {
@@ -24,10 +25,10 @@ namespace BitalinoMonitor.Domain.PatientContext.Services.Filter
             }
         }
 
-        public ButterworthFilterService(double frequency)
+        public ButterworthFilterService(double frequency, EExamType type)
         {
             int order = 4;
-            double cutoff = 40;
+            double cutoff = SensorService.GetCuttoffFrequency(type);
             double Wd = cutoff / frequency * 2;
 
             Coeff = ButterworthLowPassFilter(order, Wd);
@@ -69,6 +70,7 @@ namespace BitalinoMonitor.Domain.PatientContext.Services.Filter
         {
             // Pré-distorção da frequência de corte adimensional (digital, valor de projeto) (recalcula a frequência do filtro analógico de acordo com o valor de projeto)
             double Wc = 2 / Math.PI * Math.Tan(Math.PI / 2 * Wd);
+            //double Wc = 2 * Math.Atan(Math.PI / 2 * Wd);
 
             // Mesmo os filtros de ordem impar de determinação
             bool odd = order % 2 != 0;

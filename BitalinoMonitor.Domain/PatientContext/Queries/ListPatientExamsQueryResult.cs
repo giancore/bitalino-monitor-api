@@ -7,5 +7,6 @@ namespace BitalinoMonitor.Domain.PatientContext.Queries
         public Guid Id { get; set; }
         public DateTime Date { get; set; }
         public int Channel { get; set; }
+        public int Frequency { get; set; }
     }
 }

@@ -5,6 +5,11 @@ namespace BitalinoMonitor.Domain.PatientContext.Services
 {
     public static class SensorService
     {
+        static double CutoffFrequencyECG = 40;
+        static double CutoffFrequencyEEG = 48;
+        static double CutoffFrequencyEMG = 480;
+        static double CutoffFrequencyEDA = 2.8;
+
         static readonly int gainEcg = 1100;
         static readonly int gainEcmg = 1009;
         static readonly int gainEeg = 40000;
@@ -31,6 +36,23 @@ namespace BitalinoMonitor.Domain.PatientContext.Services
             }
 
             return 0.0;
+        }
+
+        public static double GetCuttoffFrequency(EExamType type)
+        {
+            switch (type)
+            {
+                case EExamType.Electromyography:
+                    return CutoffFrequencyEMG;
+                case EExamType.Electrocardiography:
+                    return CutoffFrequencyECG;
+                case EExamType.ElectrodermalActivity:
+                    return CutoffFrequencyEDA;
+                case EExamType.Electroencephalography:
+                    return CutoffFrequencyEEG;
+                default:
+                    return 0.0;
+            }
         }
 
         static double CalculateElectrocardiographyValue(double adc)

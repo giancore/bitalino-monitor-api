@@ -38,10 +38,10 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
 
         public IEnumerable<BitalinoFrame> GetFrames(Guid idExam)
         {
-            string query = "SELECT [Id], [Identifier], [Seq], [A0], [A1], [A2], [A3], [A4], [A5], [D0], [D1], [D2], [D3] FROM [BitalinoFrame] WHERE [IdExam] = @idExam ORDER BY [Id]";
+            string query = "SELECT [Id], [Identifier], [Seq], [A0], [A1], [A2], [A3], [A4], [A5], [D0], [D1], [D2], [D3], [CreateDate] FROM [BitalinoFrame] WHERE [IdExam] = @idExam ORDER BY [CreateDate]";
 
             return _context.Connection.Query(query, new { idExam })
-                       .Select(row => new BitalinoFrame(row.Id, row.Identifier, row.Seq, row.A0, row.A1, row.A2, row.A3, row.A4, row.A5, row.D0, row.D1, row.D2, row.D3));
+                       .Select(row => new BitalinoFrame(row.Id, row.Identifier, row.Seq, row.A0, row.A1, row.A2, row.A3, row.A4, row.A5, row.D0, row.D1, row.D2, row.D3, row.CreateDate));
         }
 
         public Patient GetPatientByIdExam(Guid idExam)
@@ -91,7 +91,7 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
         public IEnumerable<ListPatientExamsQueryResult> ListExams(Guid idPatient)
         {
             return _context.Connection
-                .Query<ListPatientExamsQueryResult>("SELECT [Id], [Date], [Channel] FROM [Exam] WHERE [IdPatient] = @idPatient ORDER BY [Date] DESC", new { idPatient });
+                .Query<ListPatientExamsQueryResult>("SELECT [Id], [Date], [Channel], [Frequency] FROM [Exam] WHERE [IdPatient] = @idPatient ORDER BY [Date] DESC", new { idPatient });
         }
 
         public IEnumerable<ListPatientExamsBitalinoFrameQueryResult> ListFrames(Guid idExam)
