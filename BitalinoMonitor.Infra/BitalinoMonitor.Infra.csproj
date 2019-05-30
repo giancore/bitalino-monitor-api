@@ -3,17 +3,12 @@
   <ItemGroup>
     <ProjectReference Include="..\BitalinoMonitor.Domain\BitalinoMonitor.Domain.csproj" />
     <ProjectReference Include="..\BitalinoMonitor.Shared\BitalinoMonitor.Shared.csproj" />
+    <ProjectReference Include="..\OpenEhr\BitalinoMonitor.OpenEHR.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="dapper" Version="1.60.6" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="OpenEHR">
-      <HintPath>..\Library\OpenEHR.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
   <PropertyGroup>

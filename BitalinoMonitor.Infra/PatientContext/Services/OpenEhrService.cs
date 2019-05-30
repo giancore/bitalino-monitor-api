@@ -1,6 +1,7 @@
 ﻿using BitalinoMonitor.Domain.PatientContext.Entities;
 using BitalinoMonitor.Domain.PatientContext.Services;
 using OpenEhr.RM.Common.Archetyped.Impl;
+using OpenEhr.RM.Common.ChangeControl;
 using OpenEhr.RM.Common.Generic;
 using OpenEhr.RM.Composition;
 using OpenEhr.RM.Composition.Content;
@@ -26,37 +27,50 @@ namespace BitalinoMonitor.Infra.PatientContext.Services
         public string CreateCompositionAsXml(Patient patient, Exam exam)
         {
             var composition = CreateComposition(patient);
+            var version = CreateVersion(composition);
 
             var settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true,
                 Indent = true,
-                NewLineOnAttributes = true
+                NewLineOnAttributes = true,
+                ConformanceLevel = ConformanceLevel.Auto
             };
 
             using (var stringWriter = new StringWriter())
             {
                 using (var writer = XmlWriter.Create(stringWriter, settings))
                 {
-                    var serializer = new XmlSerializer(typeof(Composition), new XmlAttributeOverrides(), new Type[] { },
-                                        new XmlRootAttribute("composition"), RmXmlSerializer.OpenEhrNamespace);
-
-                    serializer.Serialize(writer, composition);
-
+                    RmXmlSerializer.SerializeEhrServer(writer, version);
                     return stringWriter.ToString();
                 }
             }
+        }
+
+        OriginalVersion<Composition> CreateVersion(Composition composition)
+        {
+            var uid = ObjectVersionId.CreateNew(new HierObjectId("EHR"));
+            var uid2 = ObjectVersionId.CreateNew(new HierObjectId("EHR"));
+            var audition = CreateAudition();
+
+            return new OriginalVersion<Composition>(uid, null, new DvCodedText("complete", "532", "openehr"), audition, new ObjectRef(new GenericId(Guid.NewGuid().ToString(), "EHR"), "EHR::COMMON", "CONTRIBUTION"),  composition);
+        }
+
+        AuditDetails CreateAudition()
+        {
+            var party = new PartyIdentified("Dr. Cristiano",new PartyRef(new HierObjectId("EHR"), "DEMOGRAPHIC", "PERSON"));
+            return new AuditDetails("CABOLABS_EHR", new DvDateTime(DateTime.Now), new DvCodedText("Creation", "249", "openehr"), party, new DvText("Teste"));
         }
 
         Cluster CreateClusterPersonName(Patient patient)
         {
             string archetypeNodeId = "openEHR-EHR-CLUSTER.person_name.v1";
 
-            var name = new DvText("Bitalino Monitor Report");
+            var name = new DvText("Paciente");
             var at0006 = new Element(new DvText("Name type"), "at0006", null, null, null, null, new DvText("Registered name"), null);
-            var at0020 = new Element(new DvText("Registered name"), "at0020", null, null, null, null, new DvText(patient.Name), null);
+            var at0020 = new Element(new DvText("Registered name"), "at0006", null, null, null, null, new DvCodedText(patient.Name, "at0020", "local"), null);
 
-            var cluster = new Cluster(name, "at0088", null, null, GetArchetypeDetails(archetypeNodeId), null, new Item[2] { at0006, at0020 });
+            var cluster = new Cluster(name, archetypeNodeId, null, null, GetArchetypeDetails(archetypeNodeId), null, new Item[2] { at0006, at0020 });
 
             return cluster;
         }
@@ -65,10 +79,11 @@ namespace BitalinoMonitor.Infra.PatientContext.Services
         {
             string archetypeNodeId = "openEHR-EHR-CLUSTER.device.v1";
 
+            var name = new DvText("Dispositivo");
             var at0001 = new Element(new DvText("Name"), "at0001", null, null, null, null, new DvText("Bitalino"), null);
             var at0002 = new Element(new DvText("Description"), "at0002", null, null, null, null, new DvText("O BITalino é um kit de ferramentas de hardware e software especificamente projetado para lidar com os requisitos dos sinais corporais."), null);
 
-            var cluster = new Cluster(new DvText("Device details"), "at0076", null, null, GetArchetypeDetails(archetypeNodeId), null, new Item[2] { at0001, at0002 });
+            var cluster = new Cluster(name, archetypeNodeId, null, null, GetArchetypeDetails(archetypeNodeId), null, new Item[2] { at0001, at0002 });
 
             return cluster;
         }
@@ -77,11 +92,11 @@ namespace BitalinoMonitor.Infra.PatientContext.Services
         {
             string archetypeNodeId = "openEHR-EHR-COMPOSITION.report-result.v1";
             var language = new CodePhrase("en", "ISO_639-1");
-            var party = new PartyIdentified("Gian Mella");
-            var context = new EventContext(new DvDateTime(), null, new DvCodedText("232", "secondary medical care", "openehr"), null, null, null, null);
+            var party = new PartyIdentified("Dr. Cristiano");
+            var context = new EventContext(new DvDateTime(DateTime.Now), null, new DvCodedText("Hospital X", "secondary medical care", "openehr"), null, null, null, null);
 
             var content = CreateObservationEcg(patient);
-            var composition = new Composition(new DvText("Result Report"), archetypeNodeId, null, null, GetArchetypeDetails(archetypeNodeId), null, language, language, new DvCodedText("Teste"), context, new ContentItem[1] { content }, party);
+            var composition = new Composition(new DvText("Result Report"), archetypeNodeId, null, null, GetArchetypeDetails(archetypeNodeId), null, language, language, new DvCodedText("event", "433", "openehr"), context, new ContentItem[1] { content }, party);
 
             return composition;
         }
@@ -93,7 +108,7 @@ namespace BitalinoMonitor.Infra.PatientContext.Services
             var name = new DvText("ECG result");
             var language = new CodePhrase("en", "ISO_639-1");
             var encoding = new CodePhrase("UTF-8", "IANA_character-sets");
-            var party = new PartyIdentified("Gian Mella");
+            var party = new PartyIdentified("Dr. Cristiano");
 
             var medicalDevice = CreateClusterMedicalDevice();
             var personName = CreateClusterPersonName(patient);
@@ -134,41 +149,41 @@ namespace BitalinoMonitor.Infra.PatientContext.Services
             var elementGlobalQTcInterval = new Element(new DvText("Global QTc interval"), "at0008", null, null, null, null, new DvQuantity(00.0, "ms", 0), null);
             treeItensData.Add(elementGlobalQTcInterval);
 
-            var elementPAxis = new Element(new DvText("P axis"), "at0020", null, null, null, null, new DvText(), null);
+            var elementPAxis = new Element(new DvText("P axis"), "at0020", null, null, null, null, new DvText("Sem Valor"), null);
             treeItensData.Add(elementPAxis);
 
-            var elementQRSAxis = new Element(new DvText("QRS axis"), "at0021", null, null, null, null, new DvText(), null);
+            var elementQRSAxis = new Element(new DvText("QRS axis"), "at0021", null, null, null, null, new DvText("Sem Valor"), null);
             treeItensData.Add(elementQRSAxis);
 
-            var elementTAxis = new Element(new DvText("T axis"), "at0022", null, null, null, null, new DvText(), null);
+            var elementTAxis = new Element(new DvText("T axis"), "at0022", null, null, null, null, new DvText("Sem Valor"), null);
             treeItensData.Add(elementTAxis);
 
-            var elementDescription = new Element(new DvText("Description"), "at0098", null, null, null, null, new DvText(), null);
-            treeItensData.Add(elementDescription);
+            //var elementDescription = new Element(new DvText("Description"), "at0098", null, null, null, null, new DvText("Sem Valor"), null);
+            //treeItensData.Add(elementDescription);
 
-            var elementClinicalInformationProvided = new Element(new DvText("Clinical information provided"), "at0096", null, null, null, null, new DvText(), null);
+            var elementClinicalInformationProvided = new Element(new DvText("Clinical information provided"), "at0096", null, null, null, null, new DvText("Sem Valor"), null);
             treeItensData.Add(elementClinicalInformationProvided);
 
-            var elementDeviceInterpretation = new Element(new DvText("Device interpretation"), "at0009", null, null, null, null, new DvText(), null);
+            var elementDeviceInterpretation = new Element(new DvText("Device interpretation"), "at0009", null, null, null, null, new DvText("Sem Valor"), null);
             treeItensData.Add(elementDeviceInterpretation);
 
-            var elementFinding = new Element(new DvText("Finding"), "at0101", null, null, null, null, new DvText(), null);
+            var elementFinding = new Element(new DvText("Finding"), "at0101", null, null, null, null, new DvText("Sem Valor"), null);
             treeItensData.Add(elementFinding);
 
-            var elementECGDiagnosis = new Element(new DvText("ECG diagnosis"), "at0081", null, null, null, null, new DvText(), null);
+            var elementECGDiagnosis = new Element(new DvText("ECG diagnosis"), "at0081", null, null, null, null, new DvText("Sem Valor"), null);
             treeItensData.Add(elementECGDiagnosis);
 
-            var elementConclusion = new Element(new DvText("Conclusion"), "at0089", null, null, null, null, new DvText(), null);
+            var elementConclusion = new Element(new DvText("Conclusion"), "at0089", null, null, null, null, new DvText("Sem Valor"), null);
             treeItensData.Add(elementConclusion);
 
-            var elementComment = new Element(new DvText("Comment"), "at0090", null, null, null, null, new DvText(), null);
+            var elementComment = new Element(new DvText("Comment"), "at0090", null, null, null, null, new DvText("Sem Valor"), null);
             treeItensData.Add(elementComment);
 
             var itemTreeData = new ItemTree(new DvText("Tree"), "at0005", null, null, null, null, treeItensData.ToArray());
 
-            var pontEvent = new PointEvent<ItemStructure>(new DvText("Any event"), "at0002", null, null, null, null, new DvDateTime(new DateTime()), itemTreeData, null);
+            var pontEvent = new PointEvent<ItemStructure>(new DvText("Any event"), "at0002", null, null, null, null, new DvDateTime(DateTime.Now), itemTreeData, null);
 
-            var history = new History<ItemStructure>(new DvText("Event Series"), "at0001", null, null, null, null, new DvDateTime(), null, null, new Event<ItemStructure>[1] { pontEvent }, null);
+            var history = new History<ItemStructure>(new DvText("Event Series"), "at0001", null, null, null, null, new DvDateTime(DateTime.Now), null, null, new Event<ItemStructure>[1] { pontEvent }, null);
 
             return history;
         }
@@ -177,7 +192,7 @@ namespace BitalinoMonitor.Infra.PatientContext.Services
         {
             //var aId = new ArchetypeId("openEHR-EHR-COMPOSITION.report-result.v1");
             var aId = new ArchetypeId(archetypeId);
-            var tId = new TemplateId("bitalino_monitor.pt.v1");
+            var tId = new TemplateId("bitalino_monitor.en.v1");
             string rmVersion = "1.0.1";
 
             Archetyped details = new Archetyped(aId, rmVersion, tId);

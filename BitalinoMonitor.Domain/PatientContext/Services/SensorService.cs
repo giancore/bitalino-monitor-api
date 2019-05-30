@@ -7,7 +7,7 @@ namespace BitalinoMonitor.Domain.PatientContext.Services
     {
         static double CutoffFrequencyECG = 40;
         static double CutoffFrequencyEEG = 48;
-        static double CutoffFrequencyEMG = 480;
+        static double CutoffFrequencyEMG = 48;
         static double CutoffFrequencyEDA = 2.8;
 
         static readonly int gainEcg = 1100;
