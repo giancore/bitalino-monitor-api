@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="dapper" Version="1.60.6" />
+    <PackageReference Include="DapperLike.SqlBulkCopy" Version="0.1.6" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
   </ItemGroup>
 

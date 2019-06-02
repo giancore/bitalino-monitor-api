@@ -2,6 +2,7 @@ using BitalinoMonitor.Infra.DataContexts;
 using BitalinoMonitor.Infra.PatientContext.Repositories;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Linq;
 
 namespace BitalinoMonitor.Tests
 {
@@ -13,15 +14,13 @@ namespace BitalinoMonitor.Tests
         public DapperTests()
         {
             var ctx = new BitalinoMonitorDataContext();
-
             _patientRepository = new PatientRepository(ctx);
         }
 
         [TestMethod]
         public void GetPatientByIdExam()
         {
-            var idExam = new Guid("89532c4f-6a79-4fa5-a656-6559b01763be");
-
+            var idExam = new Guid("5a519201-e3e4-47e4-9f35-3b613cfc8b0d");
             var patient = _patientRepository.GetPatientByIdExam(idExam);
 
             Assert.IsNotNull(patient);
@@ -30,8 +29,7 @@ namespace BitalinoMonitor.Tests
         [TestMethod]
         public void GetPatient()
         {
-            var idExam = new Guid("fa112359-5ef3-4075-b0a2-85380173f00a");
-
+            var idExam = new Guid("5a519201-e3e4-47e4-9f35-3b613cfc8b0d");
             var patient = _patientRepository.GetPatient(idExam);
 
             Assert.IsNotNull(patient);
@@ -40,11 +38,28 @@ namespace BitalinoMonitor.Tests
         [TestMethod]
         public void GetExam()
         {
-            var idExam = new Guid("89532c4f-6a79-4fa5-a656-6559b01763be");
+            var idExam = new Guid("5a519201-e3e4-47e4-9f35-3b613cfc8b0d");
+            var exam = _patientRepository.GetExam(idExam);
 
-            var patient = _patientRepository.GetExam(idExam);
+            Assert.IsNotNull(exam);
+        }
 
+        [TestMethod]
+        public void BulkDuplicateFrames()
+        {
+            var idExam = new Guid("5a519201-e3e4-47e4-9f35-3b613cfc8b0d");
+            var exam = _patientRepository.GetExam(idExam);
+            Assert.IsNotNull(exam);
+
+            var patient = _patientRepository.GetPatientByIdExam(idExam);
             Assert.IsNotNull(patient);
+
+            var newExamID = Guid.NewGuid();
+
+            exam.Frames.ToList().ForEach(f => f.SetId(Guid.NewGuid()));
+            exam.SetId(newExamID);
+
+            _patientRepository.Save(exam, patient.Id);
         }
     }
 }

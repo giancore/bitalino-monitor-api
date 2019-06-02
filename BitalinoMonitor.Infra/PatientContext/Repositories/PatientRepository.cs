@@ -3,6 +3,7 @@ using BitalinoMonitor.Domain.PatientContext.Queries;
 using BitalinoMonitor.Domain.PatientContext.Repositories;
 using BitalinoMonitor.Infra.DataContexts;
 using Dapper;
+using DapperLike;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -136,37 +137,39 @@ namespace BitalinoMonitor.Infra.PatientContext.Repositories
         {
             _context.Connection.Execute(@"INSERT INTO [Exam] ([Id], [IdPatient], [Date], [Channel], [Frequency], [Duration])
                                             VALUES (@Id, @IdPatient, @Date, @Channel, @Frequency, @DurationAsTimeSpan)",
-                new
+            new
+            {
+                exam.Id,
+                IdPatient = idPatient,
+                exam.Date,
+                exam.Channel,
+                exam.Frequency,
+                exam.DurationAsTimeSpan
+            });
+
+            var dto = exam.Frames
+                .Select(frame => new
                 {
-                    exam.Id,
-                    IdPatient = idPatient,
-                    exam.Date,
-                    exam.Channel,
-                    exam.Frequency,
-                    exam.DurationAsTimeSpan
+                    IdExam = exam.Id,
+                    frame.Id,
+                    frame.Identifier,
+                    frame.Seq,
+                    A0 = frame.GetAnalog(0),
+                    A1 = frame.GetAnalog(1),
+                    A2 = frame.GetAnalog(2),
+                    A3 = frame.GetAnalog(3),
+                    A4 = frame.GetAnalog(4),
+                    A5 = frame.GetAnalog(5),
+                    D0 = frame.GetDigital(0),
+                    D1 = frame.GetDigital(1),
+                    D2 = frame.GetDigital(2),
+                    D3 = frame.GetDigital(3)
                 });
 
-            foreach (var frame in exam.Frames)
+            using (var conexao = _context.Connection)
             {
-                _context.Connection.Execute(@"INSERT INTO [BitalinoFrame] ([Id], [IdExam], [Identifier], [Seq], [A0], [A1], [A2], [A3] ,[A4], [A5], [D0], [D1], [D2], [D3])
-                                                VALUES (@Id, @IdExam, @Identifier, @Seq, @A0, @A1, @A2, @A3, @A4, @A5, @D0, @D1, @D2, @D3)",
-                    new
-                    {
-                        IdExam = exam.Id,
-                        frame.Id,
-                        frame.Identifier,
-                        frame.Seq,
-                        A0 = frame.GetAnalog(0),
-                        A1 = frame.GetAnalog(1),
-                        A2 = frame.GetAnalog(2),
-                        A3 = frame.GetAnalog(3),
-                        A4 = frame.GetAnalog(4),
-                        A5 = frame.GetAnalog(5),
-                        D0 = frame.GetDigital(0),
-                        D1 = frame.GetDigital(1),
-                        D2 = frame.GetDigital(2),
-                        D3 = frame.GetDigital(3)
-                    });
+                conexao.BulkInsert(dto, tableName: "BitalinoFrame");
+
             }
         }
 
